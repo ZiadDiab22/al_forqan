@@ -41,6 +41,57 @@ class TeachRequestController extends Controller
         ], 200);
     }
 
+    public function editTeachingRequest(Request $request)
+    {
+        $request->validate([
+            'id' => 'required',
+        ]);
+
+
+        if (!(teaching_request::where('id', $request->id)->exists())) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Wrong id , request dosent exists',
+            ]);
+        }
+
+        $data = $request->all();
+
+        $req = teaching_request::findOrFail($request->id);
+
+        $reqArray = $req->toArray();
+
+        foreach ($data as $key => $value) {
+            if (array_key_exists($key, $reqArray)) {
+                $req->{$key} = $value;
+            }
+        }
+
+        $req->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => "request edited Successfully",
+        ]);
+    }
+
+    public function deleteTeachingRequest($id)
+    {
+        if (!(teaching_request::where('id', $id)->exists())) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Wrong id , request dosent exists',
+            ]);
+        }
+
+        teaching_request::where('id', $id)->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => "request deleted Successfully",
+        ]);
+    }
+
     public function addTCourse(Request $request)
     {
         $request->validate([

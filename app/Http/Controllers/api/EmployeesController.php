@@ -88,6 +88,63 @@ class EmployeesController extends Controller
     ]);
   }
 
+  public function editEmp(Request $request)
+  {
+    $request->validate([
+      'id' => 'required',
+    ]);
+
+
+    if (!(employee::where('id', $request->id)->exists())) {
+      return response()->json([
+        'status' => false,
+        'message' => 'Wrong id , employee dosent exists',
+      ]);
+    }
+
+    $data = $request->all();
+
+    $emp = employee::findOrFail($request->id);
+
+    $empArray = $emp->toArray();
+
+    if ($request->hasFile('autograph_photo')) {
+      $image1 = Str::random(32) . "." . $request->autograph_photo->getClientOriginalExtension();
+      $data['autograph_photo'] = $image1;
+      Storage::disk('publicAutographs')->put($image1, file_get_contents($request->autograph_photo));
+    }
+
+    foreach ($data as $key => $value) {
+      if (array_key_exists($key, $empArray)) {
+        $emp->{$key} = $value;
+      }
+    }
+
+    $emp->save();
+
+    return response()->json([
+      'status' => true,
+      'message' => "Employee edited Successfully",
+    ]);
+  }
+
+  public function deleteEmp($id)
+  {
+    if (!(employee::where('id', $id)->exists())) {
+      return response()->json([
+        'status' => false,
+        'message' => 'Wrong id , employee dosent exists',
+      ]);
+    }
+
+    employee::where('id', $id)->delete();
+
+    return response()->json([
+      'status' => true,
+      'message' => "Employee deleted Successfully",
+    ]);
+  }
+
   public function showEmps()
   {
     $var = employee::get();

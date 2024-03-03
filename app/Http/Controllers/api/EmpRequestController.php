@@ -48,6 +48,68 @@ class EmpRequestController extends Controller
         ], 200);
     }
 
+    public function editEmpRequest(Request $request)
+    {
+        $request->validate([
+            'id' => 'required',
+        ]);
+
+        if (!(emp_request::where('id', $request->id)->exists())) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Wrong id , request dosent exists',
+            ]);
+        }
+
+        $data = $request->all();
+
+        $emp = emp_request::findOrFail($request->id);
+
+        $empArray = $emp->toArray();
+
+        if ($request->hasFile('identity_photo')) {
+            $image1 = Str::random(32) . "." . $request->identity_photo->getClientOriginalExtension();
+            $data['identity_photo'] = $image1;
+            Storage::disk('publicIdentities')->put($image1, file_get_contents($request->identity_photo));
+        }
+
+        if ($request->hasFile('certificate_photo')) {
+            $image1 = Str::random(32) . "." . $request->certificate_photo->getClientOriginalExtension();
+            $data['certificate_photo'] = $image1;
+            Storage::disk('publicCers')->put($image1, file_get_contents($request->certificate_photo));
+        }
+
+        foreach ($data as $key => $value) {
+            if (array_key_exists($key, $empArray)) {
+                $emp->{$key} = $value;
+            }
+        }
+
+        $emp->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => "requesst edited Successfully",
+        ]);
+    }
+
+    public function deleteEmpRequest($id)
+    {
+        if (!(emp_request::where('id', $id)->exists())) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Wrong id , request dosent exists',
+            ]);
+        }
+
+        emp_request::where('id', $id)->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => "request deleted Successfully",
+        ]);
+    }
+
     public function addECourse(Request $request)
     {
         $request->validate([
