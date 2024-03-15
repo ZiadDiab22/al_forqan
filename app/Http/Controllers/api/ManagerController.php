@@ -18,7 +18,6 @@ class ManagerController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'role_id' => 'required',
             'name' => 'required',
             'email' => 'email|required|unique:users',
             'password' => 'required|unique:users',
@@ -28,25 +27,40 @@ class ManagerController extends Controller
         $user->name = $request->name;
         $user->password = bcrypt($request->password);
         $user->email = $request->email;
-        $user->role_id = $request->role_id;
+        $user->role_id = 7;
         $user->save();
 
         $accessToken = $user->createToken('authToken')->accessToken;
-
-        if (activity::where('user_id', auth()->user()->id)->count() > 19) {
-            activity::where('user_id', auth()->user()->id)->first()->delete();
-        }
-        activity::create([
-            'user_id' => auth()->user()->id,
-            'name' => 'You have registered an account',
-            'note' => $user->id,
-        ]);
 
         return response([
             'status' => true,
             'user' => $user,
             'message' => 'User Created Successfully',
             'access_token' => $accessToken
+        ]);
+    }
+
+    public function editUserRole(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required',
+            'role_id' => 'required',
+        ]);
+
+        if (!(User::where('id', $request->user_id)->exists())) {
+            return response()->json([
+                'status' => false,
+                'message' => 'not found , Wrong Id'
+            ]);
+        }
+
+        $user = User::findOrFail($request->user_id);
+        $user->role_id = $request->role_id;
+        $user->save();
+
+        return response([
+            'status' => true,
+            'message' => 'edited Successfully'
         ]);
     }
 

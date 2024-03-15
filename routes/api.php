@@ -14,6 +14,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post("login", [UserController::class, "login"]);
+Route::post("register", [ManagerController::class, "register"]);
 Route::get("showStatuses", [UserController::class, "showStatuses"]);
 Route::get("showMServices", [UserController::class, "showMServices"]);
 Route::get("showNats", [UserController::class, "showNats"]);
@@ -36,8 +37,8 @@ Route::post("searchSubjectsbyClass", [SearchController::class, "searchSubjectsby
 
 Route::group(["middleware" => ["auth:api"]], function () {
     Route::post("logout", [UserController::class, "logout"]);
+    Route::post("editUserRole", [ManagerController::class, "editUserRole"])->middleware('checkManagerId');
     Route::post("showActivities", [UserController::class, "showActivities"]);
-    Route::post("register", [ManagerController::class, "register"])->middleware('checkUserId');
     Route::get("showTreqs", [UserController::class, "showTreqs"])->middleware('checkUserId');
     Route::get("showEreqs", [UserController::class, "showEreqs"])->middleware('checkUserId');
     Route::post("searchTReqs", [SearchController::class, "searchTReqs"])->middleware('checkUserId');

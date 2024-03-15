@@ -37,5 +37,8 @@ class UserTypes extends Seeder
         role::create([
             "name" => "مدرس",
         ]);
+        role::create([
+            "name" => "مستخدم عادي",
+        ]);
     }
 }

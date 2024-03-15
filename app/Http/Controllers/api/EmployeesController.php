@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\employee;
 use App\Models\Punishment;
 use App\Models\reward;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class EmployeesController extends Controller
@@ -205,57 +206,64 @@ class EmployeesController extends Controller
 
   public function addEmpPun(Request $request)
   {
-    $validatedData = $request->validate([
-      'emp_id' => 'required',
-      'name' => 'required',
-      'type' => 'required',
-      'resourse' => 'required',
-      'date' => 'required',
-    ]);
 
-    if ($request->has('note'))
-      $validatedData['note'] = $request->note;
+    $data = $request->all();
 
-    Punishment::create($validatedData);
+    foreach ($data as $pun) {
+      $insertData = [
+        'emp_id' => $pun['emp_id'],
+        'name' => $pun['name'],
+        'note' => Arr::exists($pun, 'note') ? $pun['note'] : null,
+        'date' => $pun['date'],
+        'resourse' => $pun['resourse'],
+        'type' => $pun['type'],
+      ];
+      DB::table('punishments')->insert($insertData);
+    }
 
     return response()->json([
       'status' => true,
-      'message' => "punishment added Successfully"
+      'message' => "added Successfully"
     ]);
   }
 
   public function addEmpRew(Request $request)
   {
-    $validatedData = $request->validate([
-      'emp_id' => 'required',
-      'name' => 'required',
-      'type' => 'required',
-      'resourse' => 'required',
-      'date' => 'required',
-    ]);
 
-    if ($request->has('note'))
-      $validatedData['note'] = $request->note;
+    $data = $request->all();
 
-    reward::create($validatedData);
+    foreach ($data as $rew) {
+      $insertData = [
+        'emp_id' => $rew['emp_id'],
+        'name' => $rew['name'],
+        'note' => Arr::exists($rew, 'note') ? $rew['note'] : null,
+        'date' => $rew['date'],
+        'resourse' => $rew['resourse'],
+        'type' => $rew['type'],
+      ];
+      DB::table('rewards')->insert($insertData);
+    }
 
     return response()->json([
       'status' => true,
-      'message' => "Reward added Successfully"
+      'message' => "added Successfully"
     ]);
   }
 
   public function addEmpAbs(Request $request)
   {
-    $validatedData = $request->validate([
-      'emp_id' => 'required',
-      'from' => 'required',
-      'to' => 'required',
-      'duration' => 'required',
-      'reason' => 'required',
-    ]);
+    $data = $request->all();
 
-    absences_and_vacation::create($validatedData);
+    foreach ($data as $abs) {
+      $insertData = [
+        'emp_id' => $abs['emp_id'],
+        'from' => $abs['from'],
+        'to' => $abs['to'],
+        'duration' => $abs['duration'],
+        'reason' => $abs['reason'],
+      ];
+      DB::table('absences_and_vacations')->insert($insertData);
+    }
 
     return response()->json([
       'status' => true,
@@ -265,14 +273,17 @@ class EmployeesController extends Controller
 
   public function addEmpVac(Request $request)
   {
-    $validatedData = $request->validate([
-      'emp_id' => 'required',
-      'date' => 'required',
-      'duration' => 'required',
-      'reason' => 'required',
-    ]);
+    $data = $request->all();
 
-    administrative_vacation::create($validatedData);
+    foreach ($data as $abs) {
+      $insertData = [
+        'emp_id' => $abs['emp_id'],
+        'date' => $abs['date'],
+        'duration' => $abs['duration'],
+        'reason' => $abs['reason'],
+      ];
+      DB::table('administrative_vacations')->insert($insertData);
+    }
 
     return response()->json([
       'status' => true,
