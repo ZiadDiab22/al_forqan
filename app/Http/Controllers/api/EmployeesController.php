@@ -46,32 +46,48 @@ class EmployeesController extends Controller
       'social_status_id' => 'required',
     ]);
 
-    $image1 = Str::random(32) . "." . $request->autograph_photo->getClientOriginalExtension();
+    if ($request->has('emp_id')) {
 
-    $validatedData['autograph_photo'] = $image1;
+      if (!(employee::where('id', $request->emp_id)->exists())) {
+        return response()->json([
+          'status' => false,
+          'message' => 'Wrong id , employee dosent exists',
+        ]);
+      }
 
-    if ($request->has('subject')) {
-      $validatedData['subject'] = $request->subject;
+      $data = $request->all();
+
+      $emp = employee::findOrFail($request->emp_id);
+
+      if ($request->hasFile('autograph_photo')) {
+        $image1 = Str::random(32) . "." . $request->autograph_photo->getClientOriginalExtension();
+        $data['autograph_photo'] = $image1;
+        Storage::disk('publicAutographs')->put($image1, file_get_contents($request->autograph_photo));
+      }
+
+      $emp->update($data);
+
+      return response()->json([
+        'status' => true,
+        'message' => "Employee edited Successfully",
+      ]);
     }
-    if ($request->has('tele_num')) {
-      $validatedData['tele_num'] = $request->tele_num;
+
+    if ($request->has('autograph_photo')) {
+      $image1 = Str::random(32) . "." . $request->autograph_photo->getClientOriginalExtension();
+      $validatedData['autograph_photo'] = $image1;
+      Storage::disk('publicAutographs')->put($image1, file_get_contents($request->autograph_photo));
     }
-    if ($request->has('mobile_num')) {
-      $validatedData['mobile_num'] = $request->mobile_num;
-    }
-    if ($request->has('leave_date')) {
-      $validatedData['leave_date'] = $request->leave_date;
-    }
-    if ($request->has('military_rank')) {
-      $validatedData['military_rank'] = $request->military_rank;
-    }
-    if ($request->has('school')) {
-      $validatedData['school'] = $request->school;
+
+    $headers = ['subject', 'tele_num', 'mobile_num', 'leave_date', 'military_rank', 'school'];
+
+    foreach ($headers as $h) {
+      if ($request->has($h)) {
+        $validatedData[$h] = $request->{$h};
+      }
     }
 
     $emp = employee::create($validatedData);
-
-    Storage::disk('publicAutographs')->put($image1, file_get_contents($request->autograph_photo));
 
     if (activity::where('user_id', auth()->user()->id)->count() > 19) {
       activity::where('user_id', auth()->user()->id)->first()->delete();
@@ -160,6 +176,8 @@ class EmployeesController extends Controller
 
     $data = $request->all();
 
+    emp_qualifications::where('emp_id', $data['qua1']['emp_id'])->delete();
+
     foreach ($data as $qua) {
       $insertData = [
         'emp_id' => $qua['emp_id'],
@@ -186,6 +204,8 @@ class EmployeesController extends Controller
 
     $data = $request->all();
 
+    emp_courses::where('emp_id', $data['cor1']['emp_id'])->delete();
+
     foreach ($data as $cor) {
       $insertData = [
         'emp_id' => $cor['emp_id'],
@@ -206,8 +226,9 @@ class EmployeesController extends Controller
 
   public function addEmpPun(Request $request)
   {
-
     $data = $request->all();
+
+    Punishment::where('emp_id', $data['pun1']['emp_id'])->delete();
 
     foreach ($data as $pun) {
       $insertData = [
@@ -232,6 +253,8 @@ class EmployeesController extends Controller
 
     $data = $request->all();
 
+    reward::where('emp_id', $data['rew1']['emp_id'])->delete();
+
     foreach ($data as $rew) {
       $insertData = [
         'emp_id' => $rew['emp_id'],
@@ -254,6 +277,8 @@ class EmployeesController extends Controller
   {
     $data = $request->all();
 
+    absences_and_vacation::where('emp_id', $data['abs1']['emp_id'])->delete();
+
     foreach ($data as $abs) {
       $insertData = [
         'emp_id' => $abs['emp_id'],
@@ -274,6 +299,8 @@ class EmployeesController extends Controller
   public function addEmpVac(Request $request)
   {
     $data = $request->all();
+
+    administrative_vacation::where('emp_id', $data['vac1']['emp_id'])->delete();
 
     foreach ($data as $abs) {
       $insertData = [
